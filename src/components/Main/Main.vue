@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { getCurrencies } from '../../api/exchangeRatesApi'
+import { ref, onMounted, nextTick } from 'vue'
+import { getCurrencies, getLatest } from '../../api/exchangeRatesApi'
 import CurrencyFields from '../CurrencyFields/CurrencyFields.vue'
 import RateBox from '../RateBox/RateBox.vue'
+import Storage, { FIRST_CURRENCY_KEY, SECOND_CURRENCY_KEY } from '../../services/Storage'
 
 const currencies = ref([])
 const firstCurrency = ref(null)
@@ -11,18 +12,32 @@ const secondCurrency = ref(null)
 onMounted(async () => {
   const currencyData = await getCurrencies()
   currencies.value = currencyData
+  await getLatest()
 })
 
-const setFirstCurrency = ev => {
-  firstCurrency.value = findCurrency(ev)
+const setFirstCurrency = async ev => {
+  const currency = findCurrency(ev)
+  Storage.set(FIRST_CURRENCY_KEY, currency.id)
+  await resetCurrencyValue(firstCurrency)
+  firstCurrency.value = currency
 }
-const setSecondCurrency = (ev) => {
-  secondCurrency.value = findCurrency(ev)
+const setSecondCurrency = async ev => {
+  const currency = findCurrency(ev)
+  Storage.set(SECOND_CURRENCY_KEY, currency.id)
+  await resetCurrencyValue(secondCurrency)
+  secondCurrency.value = currency
 }
 
 const findCurrency = ev => {
   const currId = ev.target.value
   return currencies.value.find(c => c.id === currId) || null
+}
+
+const resetCurrencyValue = async currency => {
+  if (currency.value) {
+    currency.value = null
+    await nextTick()
+  }
 }
 </script>
 
@@ -36,7 +51,7 @@ const findCurrency = ev => {
       </form>
 
       <RateBox
-        v-show ="firstCurrency && secondCurrency"
+        v-if="firstCurrency && secondCurrency"
         :firstCurrency="firstCurrency"
         :secondCurrency="secondCurrency"
       />

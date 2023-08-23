@@ -11,7 +11,7 @@ const { amount, setCurrency, currencies } = defineProps({
 
 <template>
   <div>
-    <select @change="setCurrency">
+    <select class="w-60" @change="setCurrency">
       <option></option>
       <option
         v-for="currency of currencies"
