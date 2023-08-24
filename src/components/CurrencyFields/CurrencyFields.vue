@@ -1,9 +1,5 @@
 <script setup>
-const { amount, setCurrency, currencies } = defineProps({
-  amount: {
-    type: Number,
-    required: true
-  },
+const { setCurrency, currencies } = defineProps({
   setCurrency: Function,
   currencies: Array
 })
